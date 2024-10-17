@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+  relationMode = "prisma"
+}
+
+model Particulars {
+  id        Int         @id @default(autoincrement())
+  name      String
+  type      String
+  amount    Float       @default(0)
+  recurring String
+  date      Int
+  locked    Boolean     @default(false)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  overrides Overrides[]
+}
+
+model Overrides {
+  id            Int         @id @default(autoincrement())
+  particular_id Int
+  particular    Particulars @relation(fields: [particular_id], references: [id])
+  amount        Float       @default(0)
+  date          Int
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Users {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  role      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  progress CoffeeProgress[]
+  tasks    CoffeeTasks[]
+}
+
+model CoffeeTasks {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  order       Int
+  points      Int
+  user_id     Int
+  user        Users    @relation(fields: [user_id], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  progress CoffeeProgress[]
+}
+
+model CoffeeProgress {
+  id      Int         @id @default(autoincrement())
+  task_id Int
+  task    CoffeeTasks @relation(fields: [task_id], references: [id])
+  user_id Int
+  user    Users       @relation(fields: [user_id], references: [id])
+  points  Int
+  status  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
